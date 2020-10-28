@@ -1,16 +1,16 @@
 {
   "private": true,
-  "displayName": "Plugin Name",
-  "name": "homebridge-plugin-name",
+  "displayName": "Somfy Protect",
+  "name": "homebridge-somfy-protect",
   "version": "1.0.0",
-  "description": "A short description about what your plugin does.",
+  "description": "Allows somfy protect alarm to be exposed in homekit using IFTTT as a proxy.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/USERNAME/GITHUB_PROJECT_NAME.git"
+    "url": "git://github.com/alxscms/homebridge-somefy-protect.git"
   },
   "bugs": {
-    "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME/issues"
+    "url": "https://github.com/alxscms/homebridge-somefy-protect/issues"
   },
   "engines": {
     "node": ">=10.17.0",
