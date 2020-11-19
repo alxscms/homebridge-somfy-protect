@@ -1,5 +1,4 @@
 {
-  "private": true,
   "displayName": "Somfy Protect",
   "name": "homebridge-somfy-protect",
   "version": "1.0.0",
