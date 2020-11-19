@@ -10,7 +10,7 @@ import {
   Logging,
   Service
 } from "homebridge";
-import {Somfy} from "./lib/Somfy";
+import {HomekitSomfySite, State} from "./lib/homekit_somfy_site";
 
 let hap: HAP;
 
@@ -26,9 +26,8 @@ class SomfyProtect implements AccessoryPlugin {
 
   private readonly logger: Logging;
   private readonly name: string;
-  private readonly somfy: Somfy;
-  private readonly siteId: string = "NxdSF9c2v5MxkeW5sqJCosXTTIT70xoS";
-  private state: number = hap.Characteristic.SecuritySystemCurrentState.DISARMED;
+
+  private readonly somfySite: HomekitSomfySite;
 
   private readonly informationService: Service;
   private readonly securitySystemService: Service;
@@ -36,7 +35,7 @@ class SomfyProtect implements AccessoryPlugin {
   constructor(logger: Logging, config: AccessoryConfig, api: API) {
     this.logger = logger;
     this.name = config.name;
-    this.somfy = new Somfy(logger, {
+    this.somfySite = new HomekitSomfySite(logger, {
       username: config.username as string,
       password: config.password as string
     });
@@ -48,39 +47,31 @@ class SomfyProtect implements AccessoryPlugin {
     this.securitySystemService = new hap.Service.SecuritySystem(this.name);
     this.securitySystemService.getCharacteristic(hap.Characteristic.SecuritySystemCurrentState)
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-        this.logger.info("Current state of security system was requested, requesting somfy");
-
-        this.somfy.getSite(this.siteId).then(result => {
-          const value = somfySecurityLevelToSecuritySystemState(result?.data.security_level);
-          this.logger.info("Got current state from somfy, returning: " + value);
-          callback(undefined, value);
-        });
-
-        // this.logger.info("Current state of security system was requested, returning: " + this.state);
-        // callback(undefined, this.state);
+        const currentState = this.somfySite.getCurrentState();
+        this.logger.info("Current state of security system was requested, returning:", currentState);
+        callback(undefined, currentState);
       });
 
     this.securitySystemService.getCharacteristic(hap.Characteristic.SecuritySystemTargetState)
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-        this.logger.info("Target state of security system was requested, requesting somfy");
-
-        this.somfy.getSite(this.siteId).then(result => {
-          const value = somfySecurityLevelToSecuritySystemState(result?.data.security_level);
-          this.logger.info("Got current state from somfy, returning: " + value);
-          callback(undefined, value);
-        });
-
-        // this.logger.info("Target state of security system was requested, returning: " + this.state);
-        // callback(undefined, this.state);
+        const targetState = this.somfySite.getTargetState();
+        this.logger.info("Target state of security system was requested, returning:", targetState);
+        callback(undefined, targetState);
       })
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-        this.logger.info("Target state was set to: " + value);
-        this.state = value as number;
-        callback(undefined, this.state);
-        this.securitySystemService
-          .getCharacteristic(hap.Characteristic.SecuritySystemCurrentState)
-          .updateValue(value);
+        this.logger.info("Target state was set to:", value);
+        this.somfySite.setTargetState(value as State);
+        callback(undefined, value);
       });
+
+    this.somfySite.onCurrentStateChange(() => {
+      this.securitySystemService
+        .getCharacteristic(hap.Characteristic.SecuritySystemCurrentState)
+        .updateValue(this.somfySite.getCurrentState());
+      this.securitySystemService
+        .getCharacteristic(hap.Characteristic.SecuritySystemTargetState)
+        .updateValue(this.somfySite.getTargetState());
+    });
 
     this.logger.info("Security system finished initializing!");
   }
@@ -96,16 +87,4 @@ class SomfyProtect implements AccessoryPlugin {
     ];
   }
 
-}
-
-function somfySecurityLevelToSecuritySystemState(securityLevel: string): number {
-  switch (securityLevel) {
-    case "armed":
-      return hap.Characteristic.SecuritySystemCurrentState.AWAY_ARM;
-    case "partial":
-      return hap.Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
-    case "disarmed":
-    default:
-      return hap.Characteristic.SecuritySystemCurrentState.DISARMED;
-  }
 }

@@ -5,18 +5,19 @@ import {Logging} from "homebridge";
 const CLIENT_ID = "84eddf48-2b8e-11e5-b2a5-124cfab25595_475buqrf8v8kgwoo4gow08gkkc0ck80488wo44s8o48sg84k40";
 const CLIENT_SECRET = "4dsqfntieu0wckwwo40kw848gw4o0c8k4owc80k4go0cs0k844";
 
-export interface Config {
+interface SomfyAPIConfig {
   username: string;
   password: string;
 }
 
-export class Somfy {
-  private config: Config;
-  private token: any;
-  private baseUrl = "https://api.myfox.io/v3";
-  private logger: Logging;
+export class SomfyAPI {
 
-  constructor(logger: Logging, config: Config) {
+  private logger: Logging;
+  private config: SomfyAPIConfig;
+  private baseUrl = "https://api.myfox.io/v3";
+  private token: any;
+
+  constructor(logger: Logging, config: SomfyAPIConfig) {
     this.logger = logger;
     this.config = config;
 
@@ -151,6 +152,7 @@ export class Somfy {
   }
 
   async setSecurityLevel(siteId: string, status: "disarmed" | "armed" | "partial") {
+    console.log("setSecurityLevel", status);
     const token = await this.updateToken();
     const options = {headers: {"Authorization": `Bearer ${token.access_token}`}};
     try {
