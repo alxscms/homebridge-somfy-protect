@@ -45,7 +45,7 @@ class SomfyProtect implements AccessoryPlugin {
   private readonly informationService: Service;
   private readonly securitySystemService: Service;
 
-  constructor(logger: Logging, config: AccessoryConfig, api: API) {
+  constructor(logger: Logging, config: AccessoryConfig) {
     this.logger = logger;
     this.name = config.name;
     this.somfySite = new HomekitSomfySite(logger, {
