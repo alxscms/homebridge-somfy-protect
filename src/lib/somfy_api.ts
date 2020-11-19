@@ -152,7 +152,6 @@ export class SomfyAPI {
   }
 
   async setSecurityLevel(siteId: string, status: "disarmed" | "armed" | "partial") {
-    console.log("setSecurityLevel", status);
     const token = await this.updateToken();
     const options = {headers: {"Authorization": `Bearer ${token.access_token}`}};
     try {
