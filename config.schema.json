@@ -1,6 +1,6 @@
 {
-  "pluginAlias": "HomebridgeSomefyProtect",
-  "pluginType": "platform",
+  "pluginAlias": "SomfyProtect",
+  "pluginType": "accessory",
   "singular": true,
   "schema": {
     "type": "object",
@@ -9,8 +9,22 @@
         "title": "Name",
         "type": "string",
         "required": true,
-        "default": "Example Dynamic Platform"
-      }
+        "default": "Somfy Protect"
+      },
+      "username": {
+        "title": "Username",
+        "type": "string",
+        "required": true,
+        "default": false,
+        "description": "Your Somfy account username"
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "required": true,
+        "default": false,
+        "description": "Your Somfy account password"
+      },
     }
   }
 }
