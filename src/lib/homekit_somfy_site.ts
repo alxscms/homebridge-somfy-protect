@@ -9,7 +9,6 @@ interface SomfySiteConfig {
 }
 
 export enum State {
-  STAY_ARM = 0,
   AWAY_ARM = 1,
   NIGHT_ARM = 2,
   DISARMED = 3,
@@ -97,8 +96,12 @@ export class HomekitSomfySite {
     }
   }
 
-  getCurrentState(): State | null {
-    return this.currentState;
+  getCurrentState(): State {
+    if(this.currentState) {
+      return this.currentState;
+    } else {
+      throw "getCurrentState: HomekitSomfySite not properly initialized";
+    }
   }
 
   private setCurrentState(state: State) {
@@ -109,8 +112,12 @@ export class HomekitSomfySite {
     }
   }
 
-  getTargetState(): State | null {
-    return this.targetState;
+  getTargetState(): State {
+    if(this.targetState) {
+      return this.targetState;
+    } else {
+      throw "getTargetState: HomekitSomfySite not properly initialized";
+    }
   }
 
   setTargetState(state: State) {
@@ -150,7 +157,6 @@ function homekitStateToSomfySecurityLevel(state: State): "disarmed" | "armed" | 
     case State.AWAY_ARM:
       return "armed";
     case State.NIGHT_ARM:
-    case State.STAY_ARM:
       return "partial";
     case State.DISARMED:
       return "disarmed";

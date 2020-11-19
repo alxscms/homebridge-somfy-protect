@@ -24,6 +24,19 @@ export = (api: API) => {
 
 class SomfyProtect implements AccessoryPlugin {
 
+  private readonly VALID_CURRENT_STATE_VALUES = [
+    hap.Characteristic.SecuritySystemCurrentState.NIGHT_ARM,
+    hap.Characteristic.SecuritySystemCurrentState.AWAY_ARM,
+    hap.Characteristic.SecuritySystemCurrentState.DISARMED,
+    hap.Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED
+  ];
+
+  private readonly VALID_TARGET_STATE_VALUES = [
+    hap.Characteristic.SecuritySystemTargetState.NIGHT_ARM,
+    hap.Characteristic.SecuritySystemTargetState.AWAY_ARM,
+    hap.Characteristic.SecuritySystemTargetState.DISARM
+  ];
+
   private readonly logger: Logging;
   private readonly name: string;
 
@@ -46,31 +59,38 @@ class SomfyProtect implements AccessoryPlugin {
 
     this.securitySystemService = new hap.Service.SecuritySystem(this.name);
     this.securitySystemService.getCharacteristic(hap.Characteristic.SecuritySystemCurrentState)
+      .setProps({validValues: this.VALID_CURRENT_STATE_VALUES})
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-        const currentState = this.somfySite.getCurrentState();
-        this.logger.info("Current state of security system was requested, returning:", currentState);
-        callback(undefined, currentState);
+        if (this.somfySite.isInitialized()) {
+          const currentState = this.somfySite.getCurrentState();
+          this.logger.info("Current state of security system was requested, returning:", currentState);
+          callback(null, currentState);
+        } else {
+          callback(new Error("An error occurred while getting the current security system state"));
+        }
       });
 
     this.securitySystemService.getCharacteristic(hap.Characteristic.SecuritySystemTargetState)
+      .setProps({validValues: this.VALID_TARGET_STATE_VALUES})
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-        const targetState = this.somfySite.getTargetState();
-        this.logger.info("Target state of security system was requested, returning:", targetState);
-        callback(undefined, targetState);
+        if (this.somfySite.isInitialized()) {
+          const targetState = this.somfySite.getTargetState();
+          this.logger.info("Target state of security system was requested, returning:", targetState);
+          callback(null, targetState);
+        } else {
+          callback(new Error("An error occurred while getting the target security system state"));
+        }
+
       })
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
         this.logger.info("Target state was set to:", value);
         this.somfySite.setTargetState(value as State);
-        callback(undefined, value);
+        callback(null, value);
       });
 
     this.somfySite.onCurrentStateChange(() => {
-      this.securitySystemService
-        .getCharacteristic(hap.Characteristic.SecuritySystemCurrentState)
-        .updateValue(this.somfySite.getCurrentState());
-      this.securitySystemService
-        .getCharacteristic(hap.Characteristic.SecuritySystemTargetState)
-        .updateValue(this.somfySite.getTargetState());
+      this.securitySystemService.updateCharacteristic(hap.Characteristic.SecuritySystemCurrentState, this.somfySite.getCurrentState());
+      this.securitySystemService.updateCharacteristic(hap.Characteristic.SecuritySystemTargetState, this.somfySite.getTargetState());
     });
 
     this.logger.info("Security system finished initializing!");
