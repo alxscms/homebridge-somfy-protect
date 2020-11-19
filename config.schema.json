@@ -15,16 +15,14 @@
         "title": "Username",
         "type": "string",
         "required": true,
-        "default": false,
         "description": "Your Somfy account username"
       },
       "password": {
         "title": "Password",
         "type": "string",
         "required": true,
-        "default": false,
         "description": "Your Somfy account password"
-      },
+      }
     }
   }
 }

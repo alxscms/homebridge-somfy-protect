@@ -23,7 +23,10 @@
     "prepublishOnly": "npm run lint && npm run build"
   },
   "keywords": [
-    "homebridge-plugin", "homebridge", "somfy", "somfy protect"
+    "homebridge-plugin",
+    "homebridge",
+    "somfy",
+    "somfy protect"
   ],
   "dependencies": {
     "axios": "^0.21.0"
