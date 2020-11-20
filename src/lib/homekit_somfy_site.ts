@@ -1,11 +1,13 @@
 import {Logging} from "homebridge";
 import {SomfyAPI} from "./somfy_api";
 import {EventEmitter} from "events";
+import {LoggingAmount} from "./logging_amout";
 import Timeout = NodeJS.Timeout;
 
 interface SomfySiteConfig {
   username: string;
   password: string;
+  loggingAmount: LoggingAmount;
 }
 
 export enum State {
@@ -33,13 +35,17 @@ export class HomekitSomfySite {
 
     this.somfyAPI = new SomfyAPI(logger, {
       username: config.username,
-      password: config.password
+      password: config.password,
+      loggingAmount: config.loggingAmount
     });
 
     this.emitter = new EventEmitter();
 
+    // logging
     this.emitter.addListener("currentStateChange", () => {
-      this.logger.info(`HomekitSomfySite changed: currentState=${this.currentState}, targetState=${this.targetState}`);
+      if (this.config.loggingAmount > LoggingAmount.OFF) {
+        this.logger.info(`Current state changed: currentState=${this.currentState}, targetState=${this.targetState}`);
+      }
     });
 
     this.initialize().then(this.startPolling.bind(this));
@@ -68,8 +74,11 @@ export class HomekitSomfySite {
     if (this.siteId !== null) {
       const result = await this.somfyAPI.getSite(this.siteId);
       const security_level = result?.data?.security_level;
-      this.logger.info("poll security level:", security_level);
       if (security_level) {
+        // logging
+        if (this.config.loggingAmount === LoggingAmount.FULL) {
+          this.logger.info("Poll security level with success, getting:", security_level);
+        }
         const state = somfySecurityLevelToHomekitState(security_level);
         this.setCurrentState(state);
       }
@@ -83,7 +92,10 @@ export class HomekitSomfySite {
       this.poll();
       this.timeout = setInterval(this.poll.bind(this), 10000);
     } else {
-      this.logger.info("startPolling: Polling already started");
+      // logging
+      if (this.config.loggingAmount === LoggingAmount.FULL) {
+        this.logger.info("startPolling: Polling already started");
+      }
     }
   }
 
@@ -92,12 +104,15 @@ export class HomekitSomfySite {
       clearInterval(this.timeout);
       this.timeout = null;
     } else {
-      this.logger.info("stopPolling: Polling already stopped");
+      // logging
+      if (this.config.loggingAmount === LoggingAmount.FULL) {
+        this.logger.info("stopPolling: Polling already stopped");
+      }
     }
   }
 
   getCurrentState(): State {
-    if(this.currentState) {
+    if (this.currentState) {
       return this.currentState;
     } else {
       throw "getCurrentState: HomekitSomfySite not properly initialized";
@@ -113,7 +128,7 @@ export class HomekitSomfySite {
   }
 
   getTargetState(): State {
-    if(this.targetState) {
+    if (this.targetState) {
       return this.targetState;
     } else {
       throw "getTargetState: HomekitSomfySite not properly initialized";
@@ -124,7 +139,10 @@ export class HomekitSomfySite {
     this.stopPolling();
     this.targetState = state;
     if (this.siteId !== null) {
-      this.logger.info("setTargetState", state);
+      // logging
+      if (this.config.loggingAmount === LoggingAmount.FULL) {
+        this.logger.info("setTargetState", state);
+      }
       this.somfyAPI.setSecurityLevel(this.siteId, homekitStateToSomfySecurityLevel(state))
         .then(() => setTimeout(this.startPolling.bind(this), 1000))
         .catch(this.startPolling.bind(this));

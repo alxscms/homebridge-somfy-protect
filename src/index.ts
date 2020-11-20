@@ -11,6 +11,7 @@ import {
   Service
 } from "homebridge";
 import {HomekitSomfySite, State} from "./lib/homekit_somfy_site";
+import {LoggingAmount} from "./lib/logging_amout";
 
 let hap: HAP;
 
@@ -39,6 +40,7 @@ class SomfyProtect implements AccessoryPlugin {
 
   private readonly logger: Logging;
   private readonly name: string;
+  private readonly loggingAmount: LoggingAmount;
 
   private readonly somfySite: HomekitSomfySite;
 
@@ -48,9 +50,12 @@ class SomfyProtect implements AccessoryPlugin {
   constructor(logger: Logging, config: AccessoryConfig) {
     this.logger = logger;
     this.name = config.name;
+    this.loggingAmount = config.loggingAmount as LoggingAmount;
+
     this.somfySite = new HomekitSomfySite(logger, {
       username: config.username as string,
-      password: config.password as string
+      password: config.password as string,
+      loggingAmount: this.loggingAmount
     });
 
     this.informationService = new hap.Service.AccessoryInformation()
@@ -63,7 +68,10 @@ class SomfyProtect implements AccessoryPlugin {
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
         if (this.somfySite.isInitialized()) {
           const currentState = this.somfySite.getCurrentState();
-          this.logger.info("Current state of security system was requested, returning:", currentState);
+          // logging
+          if (this.loggingAmount > LoggingAmount.OFF) {
+            this.logger.info("Current state of security system was requested, returning:", currentState);
+          }
           callback(null, currentState);
         } else {
           callback(new Error("An error occurred while getting the current security system state"));
@@ -75,7 +83,10 @@ class SomfyProtect implements AccessoryPlugin {
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
         if (this.somfySite.isInitialized()) {
           const targetState = this.somfySite.getTargetState();
-          this.logger.info("Target state of security system was requested, returning:", targetState);
+          // logging
+          if (this.loggingAmount > LoggingAmount.OFF) {
+            this.logger.info("Target state of security system was requested, returning:", targetState);
+          }
           callback(null, targetState);
         } else {
           callback(new Error("An error occurred while getting the target security system state"));
@@ -83,7 +94,10 @@ class SomfyProtect implements AccessoryPlugin {
 
       })
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-        this.logger.info("Target state was set to:", value);
+        // logging
+        if (this.loggingAmount > LoggingAmount.OFF) {
+          this.logger.info("Target state was set to:", value);
+        }
         this.somfySite.setTargetState(value as State);
         callback(null, value);
       });
@@ -93,7 +107,11 @@ class SomfyProtect implements AccessoryPlugin {
       this.securitySystemService.updateCharacteristic(hap.Characteristic.SecuritySystemTargetState, this.somfySite.getTargetState());
     });
 
-    this.logger.info("Security system finished initializing!");
+    // logging
+    if (this.loggingAmount > LoggingAmount.OFF) {
+      this.logger.info("Security system finished initializing!");
+    }
+
   }
 
   /*

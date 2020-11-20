@@ -1,6 +1,7 @@
 import {readFileSync, writeFileSync} from "fs";
 import axios from "axios";
 import {Logging} from "homebridge";
+import {LoggingAmount} from "./logging_amout";
 
 const CLIENT_ID = "84eddf48-2b8e-11e5-b2a5-124cfab25595_475buqrf8v8kgwoo4gow08gkkc0ck80488wo44s8o48sg84k40";
 const CLIENT_SECRET = "4dsqfntieu0wckwwo40kw848gw4o0c8k4owc80k4go0cs0k844";
@@ -8,6 +9,7 @@ const CLIENT_SECRET = "4dsqfntieu0wckwwo40kw848gw4o0c8k4owc80k4go0cs0k844";
 interface SomfyAPIConfig {
   username: string;
   password: string;
+  loggingAmount: LoggingAmount;
 }
 
 export class SomfyAPI {
@@ -32,7 +34,10 @@ export class SomfyAPI {
       const start = response.config.headers["request-startTime"];
       const end = process.hrtime(start);
       const duration = Math.round((end[0] * 1000) + (end[1] / 1000000));
-      this.logger.info(`${response.config.url} : ${duration} ms`);
+      // logging
+      if (this.config.loggingAmount === LoggingAmount.FULL) {
+        this.logger.info(`${response.config.url} : ${duration} ms`);
+      }
       response.headers["request-duration"] = duration;
       return response;
     });
@@ -84,7 +89,7 @@ export class SomfyAPI {
     } else {
       try {
         const data = readFileSync("token.json");
-        this.logger.warn("File token exist");
+        // this.logger.warn("File token exist");
         this.token = JSON.parse(data.toString());
         if (this.hasExpired()) {
           try {

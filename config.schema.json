@@ -22,6 +22,18 @@
         "type": "string",
         "required": true,
         "description": "Your Somfy account password"
+      },
+      "loggingAmount": {
+        "title": "Logging",
+        "type": "integer",
+        "default": 0,
+        "oneOf": [
+          {"title": "Off", "enum": [0]},
+          {"title": "Partial", "enum": [1]},
+          {"title": "Full", "enum": [2]}
+        ],
+        "required": true,
+        "description": "How much log do you want (partial will inform only about state changes, full will inform you about everything)"
       }
     }
   }
