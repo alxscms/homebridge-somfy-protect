@@ -101,7 +101,7 @@ export class SomfyAPI {
             return error.message;
           }
         }
-        this.logger.info("Return token");
+        // this.logger.info("Return token");
         return this.token;
       } catch (error) {
         try {
