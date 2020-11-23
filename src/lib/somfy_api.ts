@@ -1,4 +1,4 @@
-import {readFileSync, writeFileSync} from "fs";
+// import {readFileSync, writeFileSync} from "fs";
 import axios from "axios";
 import {Logging} from "homebridge";
 import {LoggingAmount} from "./logging_amout";
@@ -44,6 +44,10 @@ export class SomfyAPI {
   }
 
   private async getNewToken() {
+    // logging
+    if (this.config.loggingAmount === LoggingAmount.FULL) {
+      this.logger.info("Getting a new token");
+    }
     const token = await axios.post("https://sso.myfox.io/oauth/oauth/v2/token", {
       client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET,
@@ -53,11 +57,14 @@ export class SomfyAPI {
     });
     this.token = token.data;
     this.token.issuance = new Date().getTime();
-    writeFileSync("token.json", JSON.stringify(this.token));
     return this.token;
   }
 
   private async getRefreshToken(refreshToken: string) {
+    // logging
+    if (this.config.loggingAmount === LoggingAmount.FULL) {
+      this.logger.info("Refreshing token");
+    }
     const token = await axios.post("https://sso.myfox.io/oauth/oauth/v2/token", {
       client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET,
@@ -66,7 +73,6 @@ export class SomfyAPI {
     });
     this.token = token.data;
     this.token.issuance = new Date().getTime();
-    writeFileSync("token.json", JSON.stringify(this.token));
     return this.token;
   }
 
@@ -88,30 +94,12 @@ export class SomfyAPI {
       }
     } else {
       try {
-        const data = readFileSync("token.json");
-        // this.logger.warn("File token exist");
-        this.token = JSON.parse(data.toString());
-        if (this.hasExpired()) {
-          try {
-            this.token = await this.getRefreshToken(this.token.refresh_token);
-            writeFileSync("token.json", JSON.stringify(this.token));
-          } catch (error) {
-            this.logger.error(error.message);
-            this.logger.error("Need authorization request!");
-            return error.message;
-          }
-        }
-        // this.logger.info("Return token");
+        this.token = this.getNewToken();
         return this.token;
-      } catch (error) {
-        try {
-          this.token = this.getNewToken();
-          return this.token;
-        } catch (e) {
-          this.logger.error(e);
-          this.logger.error(error.message);
-          this.logger.error("Need authorization request!");
-        }
+      } catch (e) {
+        this.logger.error(e);
+        this.logger.error(e.message);
+        this.logger.error("Need authorization request!");
       }
     }
   }
