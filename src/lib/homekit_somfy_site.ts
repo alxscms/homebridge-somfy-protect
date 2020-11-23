@@ -4,6 +4,8 @@ import {EventEmitter} from "events";
 import {LoggingAmount} from "./logging_amout";
 import Timeout = NodeJS.Timeout;
 
+const POLL_INTERVAL = 10000;
+
 interface SomfySiteConfig {
   username: string;
   password: string;
@@ -90,7 +92,7 @@ export class HomekitSomfySite {
   private async startPolling() {
     if (this.timeout === null) {
       this.poll();
-      this.timeout = setInterval(this.poll.bind(this), 10000);
+      this.timeout = setInterval(this.poll.bind(this), POLL_INTERVAL);
     } else {
       // logging
       if (this.config.loggingAmount === LoggingAmount.FULL) {
