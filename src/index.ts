@@ -100,7 +100,7 @@ class SomfyProtect implements AccessoryPlugin {
           this.logger.info("Target state was set to:", value);
         }
         this.somfySite.setTargetState(value as State);
-        callback(null, value);
+        callback(null);
       });
 
     this.somfySite.onCurrentStateChange(() => {
