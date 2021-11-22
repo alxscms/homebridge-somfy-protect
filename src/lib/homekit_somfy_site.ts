@@ -10,6 +10,7 @@ interface SomfySiteConfig {
   username: string;
   password: string;
   loggingAmount: LoggingAmount;
+  siteId: string;
 }
 
 export enum State {
@@ -55,7 +56,15 @@ export class HomekitSomfySite {
 
   private async initialize() {
     const result = await this.somfyAPI.getALLSites();
-    const site = result?.data?.items[0];
+    const site = this.config.siteId ? result?.data?.items.find((site) => site.site_id === this.config.siteId) : result?.data?.items[0];
+    if(result?.data?.items.length > 1) {
+      const loggingFunction = this.config.siteId ? this.logger.info : this.logger.warn;
+      loggingFunction(`Multiple sites detected on your somfy account, using site ID ${site.site_id}. To use an other site, specify site ID in the plugin config under the name "siteId".`);
+      loggingFunction("Possible sites detected on your somfy account:");
+      result?.data?.items.forEach((site, index) => {
+        loggingFunction(`Site ${index + 1}: ${site.name}, site ID: ${site.site_id}`);
+      });
+    }
     if (site) {
       // set site id
       this.siteId = site.site_id;
@@ -65,6 +74,21 @@ export class HomekitSomfySite {
         this.currentState = currentState;
         this.targetState = currentState;
       }
+    } else {
+      if(result?.data) {
+        if(result.data.items.length === 0) {
+          this.logger.error("Could not retrieve site: no sites are configured on your somfy account");
+          return;
+        } else if(this.config.siteId) {
+          this.logger.error(`Could not retrieve site: the siteId "${this.config.siteId}" you have configured can not be found on your somfy account`);
+          this.logger.error("Possible sites detected on your somfy account:");
+          result?.data?.items.forEach((site, index) => {
+            this.logger.error(`Site ${index + 1}: ${site.name}, site ID: ${site.site_id}`);
+          });
+          return;
+        }
+      }
+      this.logger.error("Could not retrieve site: an unknown error has occurred");
     }
   }
 

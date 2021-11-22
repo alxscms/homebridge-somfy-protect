@@ -55,7 +55,8 @@ class SomfyProtect implements AccessoryPlugin {
     this.somfySite = new HomekitSomfySite(logger, {
       username: config.username as string,
       password: config.password as string,
-      loggingAmount: this.loggingAmount
+      loggingAmount: this.loggingAmount,
+      siteId: config.siteId as string
     });
 
     this.informationService = new hap.Service.AccessoryInformation()

@@ -26,16 +26,16 @@ Then, add the following configuration to the `accessories` array in your Homebri
   "username": "my.somfy@account.fr",
   "password": "my.somfy.account.password"
 }
-
 ```
 
 The credentials required in the configuration are the same ones you use in the official Somfy Protect app on your smartphone.
 
 That's it! The plugin will automatically add your Somfy Protect alarm in your homekit accessories.
 
-## Known limitations
-
-Having multiple homes set up in your Somfy Protect app is not supported yet as the plugin will choose one home arbitrarily. If this is something you need don't hesitate to post in the issues and I will see what I can do.
+If your somfy account has multiple homes set up, you can specify which home the plugin should be using in the config by specifying the `siteId` attribute. You should see the list of available homes in the plugin logs (even if you have turned off logs).
 
 ## Help & Support
 Any feedback is welcome. For bugs, feature requests, open an issue here :)
+
+## Dev
+Use command `npm run watch` to start a homebridge server when developing the plugin. Config used by the plugin should be set up in the folder `~/.homebridge`.
