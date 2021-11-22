@@ -24,20 +24,26 @@ export class SomfyAPI {
     this.config = config;
 
     axios.interceptors.request.use(config => {
+      // @ts-ignore
       config.headers["request-startTime"] = process.hrtime();
+      // @ts-ignore
       config.headers["Content-Type"] = "application/json";
+      // @ts-ignore
       config.headers["Accept-Encoding"] = "gzip";
       return config;
     });
 
     axios.interceptors.response.use(response => {
+      // @ts-ignore
       const start = response.config.headers["request-startTime"];
+      // @ts-ignore
       const end = process.hrtime(start);
       const duration = Math.round((end[0] * 1000) + (end[1] / 1000000));
       // logging
       if (this.config.loggingAmount === LoggingAmount.FULL) {
         this.logger.info(`${response.config.url} : ${duration} ms`);
       }
+      // @ts-ignore
       response.headers["request-duration"] = duration;
       return response;
     });
@@ -87,7 +93,7 @@ export class SomfyAPI {
       try {
         this.token = await this.getRefreshToken(this.token.refresh_token);
         return this.token;
-      } catch (error) {
+      } catch (error: any) {
         this.logger.error(error.message);
         this.logger.error("Need authorization request!");
         return error.message;
@@ -96,9 +102,9 @@ export class SomfyAPI {
       try {
         this.token = this.getNewToken();
         return this.token;
-      } catch (e) {
-        this.logger.error(e);
-        this.logger.error(e.message);
+      } catch (error: any) {
+        this.logger.error(error);
+        this.logger.error(error.message);
         this.logger.error("Need authorization request!");
       }
     }
@@ -109,7 +115,7 @@ export class SomfyAPI {
     const options = {headers: {"Authorization": `Bearer ${token.access_token}`}};
     try {
       return await axios.get(`${this.baseUrl}/site`, options);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(error.message);
     }
   }
@@ -119,7 +125,7 @@ export class SomfyAPI {
     const options = {headers: {"Authorization": `Bearer ${token.access_token}`}};
     try {
       return await axios.get(`${this.baseUrl}/site/${siteId}`, options);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(error.message);
     }
   }
@@ -129,7 +135,7 @@ export class SomfyAPI {
     const options = {headers: {"Authorization": `Bearer ${token.access_token}`}};
     try {
       return await axios.get(`${this.baseUrl}/site/${siteId}/device`, options);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(error.message);
     }
   }
@@ -139,7 +145,7 @@ export class SomfyAPI {
     const options = {headers: {"Authorization": `Bearer ${token.access_token}`}};
     try {
       return await axios.get(`${this.baseUrl}/site/${siteId}/device/${deviceId}`, options);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(error.message);
     }
   }
@@ -149,7 +155,7 @@ export class SomfyAPI {
     const options = {headers: {"Authorization": `Bearer ${token.access_token}`}};
     try {
       return await axios.put(`${this.baseUrl}/site/${siteId}/security`, {status}, options);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(error.message, error);
     }
   }
