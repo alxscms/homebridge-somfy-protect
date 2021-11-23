@@ -57,7 +57,7 @@ export class HomekitSomfySite {
   private async initialize() {
     const result = await this.somfyAPI.getALLSites();
     const site = this.config.siteId ? result?.data?.items.find((site) => site.site_id === this.config.siteId) : result?.data?.items[0];
-    if(result?.data?.items.length > 1) {
+    if (result?.data?.items.length > 1 && site) {
       const loggingFunction = this.config.siteId ? this.logger.info : this.logger.warn;
       loggingFunction(`Multiple sites detected on your somfy account, using site ID ${site.site_id}. To use an other site, specify site ID in the plugin config under the name "siteId".`);
       loggingFunction("Possible sites detected on your somfy account:");
@@ -75,11 +75,11 @@ export class HomekitSomfySite {
         this.targetState = currentState;
       }
     } else {
-      if(result?.data) {
-        if(result.data.items.length === 0) {
+      if (result?.data) {
+        if (result.data.items.length === 0) {
           this.logger.error("Could not retrieve site: no sites are configured on your somfy account");
           return;
-        } else if(this.config.siteId) {
+        } else if (this.config.siteId) {
           this.logger.error(`Could not retrieve site: the siteId "${this.config.siteId}" you have configured can not be found on your somfy account`);
           this.logger.error("Possible sites detected on your somfy account:");
           result?.data?.items.forEach((site, index) => {
@@ -114,13 +114,15 @@ export class HomekitSomfySite {
   }
 
   private async startPolling() {
-    if (this.timeout === null) {
-      this.poll();
-      this.timeout = setInterval(this.poll.bind(this), POLL_INTERVAL);
-    } else {
-      // logging
-      if (this.config.loggingAmount === LoggingAmount.FULL) {
-        this.logger.info("startPolling: Polling already started");
+    if (this.isInitialized()) {
+      if (this.timeout === null) {
+        this.poll();
+        this.timeout = setInterval(this.poll.bind(this), POLL_INTERVAL);
+      } else {
+        // logging
+        if (this.config.loggingAmount === LoggingAmount.FULL) {
+          this.logger.info("startPolling: Polling already started");
+        }
       }
     }
   }
