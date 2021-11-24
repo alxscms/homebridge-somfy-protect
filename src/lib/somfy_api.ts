@@ -1,4 +1,3 @@
-// import {readFileSync, writeFileSync} from "fs";
 import axios from "axios";
 import {Logging} from "homebridge";
 import {LoggingAmount} from "./logging_amout";
