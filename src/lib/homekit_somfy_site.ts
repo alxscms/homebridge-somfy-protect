@@ -57,7 +57,7 @@ export class HomekitSomfySite {
   private async initialize() {
     const result = await this.somfyAPI.getALLSites();
     const site = this.config.siteId ? result?.data?.items.find((site) => site.site_id === this.config.siteId) : result?.data?.items[0];
-    if (result?.data?.items.length > 0 && site) {
+    if (result?.data?.items.length > 1 && site) {
       const loggingFunction = this.config.siteId ? "info" : "warn";
       this.logger[loggingFunction](`Multiple sites detected on your somfy account, using site ID ${site.site_id}. To use an other site, specify site ID in the plugin config under the name "siteId".`);
       this.logger[loggingFunction]("Possible sites detected on your somfy account:");
